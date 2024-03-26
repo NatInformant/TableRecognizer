@@ -52,15 +52,15 @@ class ResizableFrameLayout : FrameLayout {
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             // Горизонтальная ориентация
             maxWidth = 1200
-            minWidth = 400
+            minWidth = 600
             maxHeight= 800
-            minHeight = 200
+            minHeight = 300
         } else {
             // Вертикальная ориентация
             maxWidth = 800
-            minWidth = 200
+            minWidth = 400
             maxHeight= 1200
-            minHeight = 400
+            minHeight = 200
         }
     }
 

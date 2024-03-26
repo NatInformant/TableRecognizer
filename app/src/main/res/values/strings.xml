@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Table recognizer</string>
+    <string name="take_photo">Take Photo</string>
 </resources>
