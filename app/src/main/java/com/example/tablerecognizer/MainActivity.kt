@@ -1,21 +1,30 @@
 package com.example.tablerecognizer
 
 import android.Manifest
+import android.content.ContentValues
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import com.example.tablerecognizer.databinding.ActivityMainBinding
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+
 
 typealias LumaListener = (luma: Double) -> Unit
 
@@ -65,7 +74,42 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-    private fun takePhoto() {}
+    private fun takePhoto() {
+        // Get a stable reference of the modifiable image capture use case
+        val imageCapture = imageCapture ?: return
+
+        val outputDirectory = getExternalFilesDir(null);
+        if (outputDirectory != null) {
+            val photoFile = File(outputDirectory, "photo_" + System.currentTimeMillis() + ".jpg");
+            val outputFileOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build();
+
+            // Set up image capture listener, which is triggered after photo has
+            // been taken
+            imageCapture.takePicture(
+                outputFileOptions,
+                ContextCompat.getMainExecutor(this),
+                object : ImageCapture.OnImageSavedCallback {
+                    override fun onError(exc: ImageCaptureException) {
+                        Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
+                    }
+
+                    override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                        val resultBitmap = BitmapFactory.decodeFile(photoFile.absolutePath).run {
+                            Bitmap.createBitmap(
+                                this,
+                                viewBinding.cropFrame.x.toInt(),
+                                viewBinding.cropFrame.y.toInt(),
+                                viewBinding.cropFrame.width,
+                                viewBinding.cropFrame.height)
+                        }
+
+                        resultBitmap
+                    }
+                }
+            )
+        }
+    }
+
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
@@ -80,6 +124,7 @@ class MainActivity : AppCompatActivity() {
                 .also {
                     it.setSurfaceProvider(viewBinding.viewFinder.surfaceProvider)
                 }
+            imageCapture = ImageCapture.Builder().build()
 
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
@@ -90,7 +135,7 @@ class MainActivity : AppCompatActivity() {
 
                 // Bind use cases to camera
                 cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview
+                    this, cameraSelector, preview, imageCapture
                 )
 
             } catch (exc: Exception) {
