@@ -1,27 +1,29 @@
 package com.example.tablerecognizer
 
 import android.Manifest
-import android.content.ContentValues
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.media.ExifInterface
 import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
+import android.util.DisplayMetrics
 import android.util.Log
+import android.util.Size
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
+import androidx.camera.core.impl.PreviewConfig
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import com.example.tablerecognizer.databinding.ActivityMainBinding
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -33,7 +35,7 @@ class MainActivity : AppCompatActivity() {
     private var imageCapture: ImageCapture? = null
 
     private lateinit var cameraExecutor: ExecutorService
-
+    private var density: Float? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewBinding = ActivityMainBinding.inflate(layoutInflater)
@@ -50,6 +52,7 @@ class MainActivity : AppCompatActivity() {
         viewBinding.imageCaptureButton.setOnClickListener { takePhoto() }
 
         cameraExecutor = Executors.newSingleThreadExecutor()
+        density = resources.displayMetrics.density
     }
 
     private val activityResultLauncher =
@@ -94,14 +97,36 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                        val resultBitmap = BitmapFactory.decodeFile(photoFile.absolutePath).run {
-                            Bitmap.createBitmap(
-                                this,
-                                viewBinding.cropFrame.x.toInt(),
-                                viewBinding.cropFrame.y.toInt(),
-                                viewBinding.cropFrame.width,
-                                viewBinding.cropFrame.height)
-                        }
+                        val ei = ExifInterface(photoFile.absolutePath)
+                        val orientation: Int =
+                            ei.getAttributeInt(
+                                ExifInterface.TAG_ORIENTATION,
+                                ExifInterface.ORIENTATION_NORMAL
+                            )
+                        val startBitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
+
+                        val currentBitmap: Bitmap = when (orientation) {
+                                    ExifInterface.ORIENTATION_ROTATE_90 -> startBitmap.rotate(90F)
+                                    ExifInterface.ORIENTATION_ROTATE_180 -> startBitmap.rotate(180F)
+                                    ExifInterface.ORIENTATION_ROTATE_270 -> startBitmap.rotate(270F)
+                                    else -> startBitmap
+                                }
+
+
+                        val screenWidth = viewBinding.viewFinder.width
+                        val screenHeight = viewBinding.viewFinder.height
+
+                        val scaleFactorX = currentBitmap.width.toFloat()/ screenWidth
+                        val scaleFactorY = currentBitmap.height.toFloat()/ screenHeight
+
+                        val resultBitmap = Bitmap.createBitmap(
+                            currentBitmap,
+                            (viewBinding.cropFrame.x * scaleFactorX).toInt(),
+                            (viewBinding.cropFrame.y * scaleFactorY).toInt(),
+                            (viewBinding.cropFrame.width * scaleFactorX).toInt(),
+                            (viewBinding.cropFrame.height * scaleFactorY).toInt()
+                        )
+
 
                         resultBitmap
                     }
@@ -110,6 +135,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    fun Bitmap.rotate(degrees: Float): Bitmap {
+        val matrix = Matrix()
+        matrix.postRotate(degrees)
+        val rotatedImg =
+            Bitmap.createBitmap(this, 0, 0, width, height, matrix, true)
+        this.recycle()
+        return rotatedImg
+    }
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
@@ -118,13 +151,22 @@ class MainActivity : AppCompatActivity() {
             // Used to bind the lifecycle of cameras to the lifecycle owner
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
+            val displayMetrics = DisplayMetrics()
+            windowManager.defaultDisplay.getMetrics(displayMetrics)
+            val screenWidth = displayMetrics.widthPixels
+            val screenHeight = displayMetrics.heightPixels
             // Preview
-            val preview = Preview.Builder()
+            val preview = Preview.Builder().apply {
+                setTargetAspectRatio((screenWidth.toFloat()/ screenHeight).toInt())
+
+            }
                 .build()
                 .also {
                     it.setSurfaceProvider(viewBinding.viewFinder.surfaceProvider)
                 }
-            imageCapture = ImageCapture.Builder().build()
+            imageCapture =
+                ImageCapture.Builder().setTargetRotation(windowManager.defaultDisplay.rotation)
+                    .build()
 
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
@@ -137,7 +179,6 @@ class MainActivity : AppCompatActivity() {
                 cameraProvider.bindToLifecycle(
                     this, cameraSelector, preview, imageCapture
                 )
-
             } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
             }
@@ -172,4 +213,5 @@ class MainActivity : AppCompatActivity() {
                 }
             }.toTypedArray()
     }
+
 }
