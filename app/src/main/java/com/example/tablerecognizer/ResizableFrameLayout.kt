@@ -53,7 +53,7 @@ class ResizableFrameLayout : FrameLayout {
             // Горизонтальная ориентация
             maxWidth = 1200
             minWidth = 600
-            maxHeight= 800
+            maxHeight= 500
             minHeight = 300
         } else {
             // Вертикальная ориентация
