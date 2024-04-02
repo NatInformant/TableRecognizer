@@ -157,15 +157,16 @@ class MainActivity : AppCompatActivity() {
             val screenHeight = displayMetrics.heightPixels
             // Preview
             val preview = Preview.Builder().apply {
-                setTargetAspectRatio((screenWidth.toFloat()/ screenHeight).toInt())
-
+                this.setTargetResolution(Size(screenWidth,screenHeight))
             }
                 .build()
                 .also {
                     it.setSurfaceProvider(viewBinding.viewFinder.surfaceProvider)
                 }
             imageCapture =
-                ImageCapture.Builder().setTargetRotation(windowManager.defaultDisplay.rotation)
+                ImageCapture.Builder()
+                    .setTargetResolution(Size(screenWidth,screenHeight))
+                    .setTargetRotation(windowManager.defaultDisplay.rotation)
                     .build()
 
             // Select back camera as a default
