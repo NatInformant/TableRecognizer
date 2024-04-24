@@ -1,4 +1,4 @@
-package com.example.tablerecognizer
+package com.example.tablerecognizer.ui.view
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -14,21 +14,16 @@ import android.util.Size
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
-import androidx.camera.core.impl.PreviewConfig
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import com.example.tablerecognizer.databinding.ActivityMainBinding
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-
-
-typealias LumaListener = (luma: Double) -> Unit
 
 class MainActivity : AppCompatActivity() {
     private lateinit var viewBinding: ActivityMainBinding
@@ -157,7 +152,7 @@ class MainActivity : AppCompatActivity() {
             val screenHeight = displayMetrics.heightPixels
             // Preview
             val preview = Preview.Builder().apply {
-                this.setTargetResolution(Size(screenWidth,screenHeight))
+                this.setTargetResolution(Size(screenWidth, screenHeight))
             }
                 .build()
                 .also {
@@ -165,7 +160,7 @@ class MainActivity : AppCompatActivity() {
                 }
             imageCapture =
                 ImageCapture.Builder()
-                    .setTargetResolution(Size(screenWidth,screenHeight))
+                    .setTargetResolution(Size(screenWidth, screenHeight))
                     .setTargetRotation(windowManager.defaultDisplay.rotation)
                     .build()
 

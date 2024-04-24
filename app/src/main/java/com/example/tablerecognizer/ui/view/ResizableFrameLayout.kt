@@ -1,4 +1,4 @@
-package com.example.tablerecognizer
+package com.example.tablerecognizer.ui.view
 
 import android.content.Context
 import android.content.res.Configuration

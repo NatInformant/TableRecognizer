@@ -5,14 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#B6B2B2"
-    tools:context=".MainActivity"
+    tools:context=".ui.view.MainActivity"
     >
     <androidx.camera.view.PreviewView
         android:id="@+id/view_finder"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <com.example.tablerecognizer.ResizableFrameLayout
+    <com.example.tablerecognizer.ui.view.ResizableFrameLayout
         android:id="@+id/crop_frame"
         android:layout_width="160dp"
         android:layout_height="80dp"
