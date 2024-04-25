@@ -11,7 +11,7 @@ annotation class AppComponentScope
 @dagger.Component(modules = [DataModule::class, InteractiveMapViewModelModule::class])
 @AppComponentScope
 interface ApplicationComponent {
-    fun getMainViewModelFactory(): ChatsViewModelFactory
+    fun getMainViewModelFactory(): MainViewModelFactory
 }
 
 @dagger.Module

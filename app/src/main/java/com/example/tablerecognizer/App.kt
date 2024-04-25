@@ -2,8 +2,9 @@ package com.example.tablerecognizer
 
 import android.app.Application
 import android.location.Location
+import com.example.tablerecognizer.ioc.ApplicationComponent
+import com.example.tablerecognizer.ioc.DaggerApplicationComponent
 
-/*
 class App : Application() {
     val applicationComponent: ApplicationComponent by lazy {
         DaggerApplicationComponent.builder().build()
@@ -20,4 +21,4 @@ class App : Application() {
             return requireNotNull(sInstance) { "I really don't how you get there." }
         }
     }
-}*/
+}
