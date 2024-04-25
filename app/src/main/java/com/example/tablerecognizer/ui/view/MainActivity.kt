@@ -13,6 +13,7 @@ import android.util.Log
 import android.util.Size
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -20,6 +21,8 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.viewModels
+import com.example.tablerecognizer.App
 import com.example.tablerecognizer.databinding.ActivityMainBinding
 import java.io.File
 import java.util.concurrent.ExecutorService
@@ -31,6 +34,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var cameraExecutor: ExecutorService
     private var density: Float? = null
+    private val applicationComponent
+        get() = App.getInstance().applicationComponent
+    private val viewModel: MainViewModel by viewModels { applicationComponent.getMainViewModelFactory() }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewBinding = ActivityMainBinding.inflate(layoutInflater)
@@ -45,6 +51,10 @@ class MainActivity : AppCompatActivity() {
 
         // Set up the listeners for take photo and video capture buttons
         viewBinding.imageCaptureButton.setOnClickListener { takePhoto() }
+
+        viewModel.message.observe(this){
+            showMessage(it)
+        }
 
         cameraExecutor = Executors.newSingleThreadExecutor()
         density = resources.displayMetrics.density
@@ -71,7 +81,9 @@ class MainActivity : AppCompatActivity() {
                 startCamera()
             }
         }
+    private fun showMessage(newMessage:String){
 
+    }
     private fun takePhoto() {
         // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
@@ -122,8 +134,7 @@ class MainActivity : AppCompatActivity() {
                             (viewBinding.cropFrame.height * scaleFactorY).toInt()
                         )
 
-
-                        resultBitmap
+                        viewModel.sendPhoto(resultBitmap)
                     }
                 }
             )
