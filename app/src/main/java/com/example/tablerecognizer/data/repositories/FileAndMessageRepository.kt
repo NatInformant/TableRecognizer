@@ -21,5 +21,6 @@ class FileAndMessageRepository @Inject constructor(
         withContext(Dispatchers.IO) {
             dataSource.sendPhoto(photo)
         }
+        _message.value = dataSource.loadMessage()
     }
 }

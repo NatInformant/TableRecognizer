@@ -14,14 +14,15 @@ class FileRemoteDataSource {
             .create(PhotoRecognizerApi::class.java)
     }
 
-    private val message: String = ""
-
+    private var message: String = ""
+    fun loadMessage() = message
     suspend fun sendPhoto(photo: Bitmap) {
-        val response = photoRecognizerApi.getFile(
+        /*val response = photoRecognizerApi.getFile(
             photo
         )
         if (response.isSuccessful) {
             //Ждём бек
-        }
+        }*/
+        message = "Файл пришёл"
     }
 }

@@ -82,7 +82,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     private fun showMessage(newMessage:String){
-
+        Toast.makeText(this,newMessage,Toast.LENGTH_SHORT).show()
     }
     private fun takePhoto() {
         // Get a stable reference of the modifiable image capture use case
