@@ -23,6 +23,6 @@ class FileRemoteDataSource {
         if (response.isSuccessful) {
             //Ждём бек
         }*/
-        message = "Файл пришёл"
+        message = "Файл с таблице сохранен по адресу C:\\ProgramData\\Adobe"
     }
 }

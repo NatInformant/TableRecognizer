@@ -11,6 +11,9 @@ import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Size
+import android.view.Gravity
+import android.view.View
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -21,12 +24,13 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.viewModels
 import com.example.tablerecognizer.App
 import com.example.tablerecognizer.databinding.ActivityMainBinding
+import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var viewBinding: ActivityMainBinding
@@ -52,7 +56,7 @@ class MainActivity : AppCompatActivity() {
         // Set up the listeners for take photo and video capture buttons
         viewBinding.imageCaptureButton.setOnClickListener { takePhoto() }
 
-        viewModel.message.observe(this){
+        viewModel.message.observe(this) {
             showMessage(it)
         }
 
@@ -81,9 +85,26 @@ class MainActivity : AppCompatActivity() {
                 startCamera()
             }
         }
-    private fun showMessage(newMessage:String){
-        Toast.makeText(this,newMessage,Toast.LENGTH_SHORT).show()
+
+    private fun showMessage(newMessage: String) {
+        if (newMessage == "") {
+            return
+        }
+
+        val snackbar =
+            Snackbar.make(viewBinding.frameLayout, newMessage, Snackbar.LENGTH_INDEFINITE)
+
+        snackbar.setAction("OK") { // User clicked OK button
+            snackbar.dismiss()
+        }
+
+        val view = snackbar.view
+        val params = view.layoutParams as FrameLayout.LayoutParams
+        params.gravity = Gravity.TOP
+        view.layoutParams = params
+        snackbar.show()
     }
+
     private fun takePhoto() {
         // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
@@ -113,18 +134,18 @@ class MainActivity : AppCompatActivity() {
                         val startBitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
 
                         val currentBitmap: Bitmap = when (orientation) {
-                                    ExifInterface.ORIENTATION_ROTATE_90 -> startBitmap.rotate(90F)
-                                    ExifInterface.ORIENTATION_ROTATE_180 -> startBitmap.rotate(180F)
-                                    ExifInterface.ORIENTATION_ROTATE_270 -> startBitmap.rotate(270F)
-                                    else -> startBitmap
-                                }
+                            ExifInterface.ORIENTATION_ROTATE_90 -> startBitmap.rotate(90F)
+                            ExifInterface.ORIENTATION_ROTATE_180 -> startBitmap.rotate(180F)
+                            ExifInterface.ORIENTATION_ROTATE_270 -> startBitmap.rotate(270F)
+                            else -> startBitmap
+                        }
 
 
                         val screenWidth = viewBinding.viewFinder.width
                         val screenHeight = viewBinding.viewFinder.height
 
-                        val scaleFactorX = currentBitmap.width.toFloat()/ screenWidth
-                        val scaleFactorY = currentBitmap.height.toFloat()/ screenHeight
+                        val scaleFactorX = currentBitmap.width.toFloat() / screenWidth
+                        val scaleFactorY = currentBitmap.height.toFloat() / screenHeight
 
                         val resultBitmap = Bitmap.createBitmap(
                             currentBitmap,
