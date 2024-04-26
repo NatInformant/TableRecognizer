@@ -27,10 +27,12 @@ class ResizableFrameLayout : FrameLayout {
         init(context)
     }
 
-    private val borderPaint = Paint(Color.BLACK)
+    private val borderPaint = Paint()
     private fun init(context: Context) {
+
+        borderPaint.color = Color.WHITE
         borderPaint.style = Paint.Style.STROKE
-        borderPaint.strokeWidth = 5F // Установите толщину границы здесь
+        borderPaint.strokeWidth = 20F // Установите толщину границы здесь
     }
 
     private var centerX = 0
@@ -39,10 +41,11 @@ class ResizableFrameLayout : FrameLayout {
     private var maxHeight = 0
     private var minWidth = 0
     private var minHeight = 0
+    private val borderLength = 60f
     private val location = IntArray(2)
     public override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
-        canvas?.drawRect(0f, 0f, width.toFloat(), height.toFloat(), borderPaint);
+        setUpCorners(canvas)
 
         this.getLocationOnScreen(location)
 
@@ -63,7 +66,19 @@ class ResizableFrameLayout : FrameLayout {
             minHeight = 200
         }
     }
+    private fun setUpCorners(canvas: Canvas?){
+        canvas?.drawLine(0f, 0f, 0f, borderLength, borderPaint)
+        canvas?.drawLine(0f, 0f, borderLength, 0f, borderPaint)
 
+        canvas?.drawLine(width.toFloat(), 0f, width.toFloat(), borderLength, borderPaint)
+        canvas?.drawLine(width.toFloat(), 0f, width.toFloat()-borderLength, 0f, borderPaint)
+
+        canvas?.drawLine(width.toFloat(), height.toFloat(), width.toFloat(), height.toFloat() - borderLength, borderPaint)
+        canvas?.drawLine(width.toFloat(), height.toFloat(), width.toFloat()-borderLength, height.toFloat(), borderPaint)
+
+        canvas?.drawLine(0f, height.toFloat(), 0f, height.toFloat() - borderLength, borderPaint)
+        canvas?.drawLine(0f, height.toFloat(), borderLength, height.toFloat(), borderPaint)
+    }
     var lastTouchX :Int = 0
     var lastTouchY :Int = 0
     override fun onTouchEvent(event: MotionEvent): Boolean {

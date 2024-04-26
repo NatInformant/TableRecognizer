@@ -17,7 +17,7 @@
         android:id="@+id/crop_frame"
         android:layout_width="160dp"
         android:layout_height="80dp"
-        android:background="#8BFFFFFF"
+        android:background="#4AFFFFFF"
         android:layout_gravity="center"
         />
 
