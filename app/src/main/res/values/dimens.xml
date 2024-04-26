@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="crop_frame_stroke_width" type="integer">40</item>
+    <item name="crop_frame_corner_length" type="integer">60</item>
+    <item name="crop_frame_horizontal_orientation_max_width" type="integer">1200</item>
+    <item name="crop_frame_horizontal_orientation_max_height" type="integer">500</item>
+    <item name="crop_frame_horizontal_orientation_min_width" type="integer">600</item>
+    <item name="crop_frame_horizontal_orientation_min_height" type="integer">300</item>
+    <item name="crop_frame_vertical_orientation_max_width" type="integer">800</item>
+    <item name="crop_frame_vertical_orientation_max_height" type="integer">1200</item>
+    <item name="crop_frame_vertical_orientation_min_width" type="integer">400</item>
+    <item name="crop_frame_vertical_orientation_min_height" type="integer">200</item>
+</resources>

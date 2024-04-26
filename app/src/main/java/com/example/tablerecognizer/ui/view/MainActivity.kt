@@ -12,7 +12,6 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Size
 import android.view.Gravity
-import android.view.View
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -109,10 +108,10 @@ class MainActivity : AppCompatActivity() {
         // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
 
-        val outputDirectory = getExternalFilesDir(null);
+        val outputDirectory = getExternalFilesDir(null)
         if (outputDirectory != null) {
-            val photoFile = File(outputDirectory, "photo_" + System.currentTimeMillis() + ".jpg");
-            val outputFileOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build();
+            val photoFile = File(outputDirectory, "photo_" + System.currentTimeMillis() + ".jpg")
+            val outputFileOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
             // Set up image capture listener, which is triggered after photo has
             // been taken
@@ -231,7 +230,6 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "CameraXApp"
-        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private val REQUIRED_PERMISSIONS =
             mutableListOf(
                 Manifest.permission.CAMERA

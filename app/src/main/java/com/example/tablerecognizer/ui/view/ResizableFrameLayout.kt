@@ -8,6 +8,7 @@ import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.widget.FrameLayout
+import com.example.tablerecognizer.R
 
 
 class ResizableFrameLayout : FrameLayout {
@@ -29,10 +30,9 @@ class ResizableFrameLayout : FrameLayout {
 
     private val borderPaint = Paint()
     private fun init(context: Context) {
-
         borderPaint.color = Color.WHITE
         borderPaint.style = Paint.Style.STROKE
-        borderPaint.strokeWidth = 20F // Установите толщину границы здесь
+        borderPaint.strokeWidth = resources.getInteger(R.integer.crop_frame_stroke_width).toFloat()
     }
 
     private var centerX = 0
@@ -41,7 +41,7 @@ class ResizableFrameLayout : FrameLayout {
     private var maxHeight = 0
     private var minWidth = 0
     private var minHeight = 0
-    private val borderLength = 60f
+    private val cornerLength = resources.getInteger(R.integer.crop_frame_corner_length).toFloat()
     private val location = IntArray(2)
     public override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
@@ -54,30 +54,30 @@ class ResizableFrameLayout : FrameLayout {
         val orientation = resources.configuration.orientation
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             // Горизонтальная ориентация
-            maxWidth = 1200
-            minWidth = 600
-            maxHeight= 500
-            minHeight = 300
+            maxWidth = resources.getInteger(R.integer.crop_frame_horizontal_orientation_max_width)
+            minWidth = resources.getInteger(R.integer.crop_frame_horizontal_orientation_min_width)
+            maxHeight= resources.getInteger(R.integer.crop_frame_horizontal_orientation_max_height)
+            minHeight = resources.getInteger(R.integer.crop_frame_horizontal_orientation_min_height)
         } else {
             // Вертикальная ориентация
-            maxWidth = 800
-            minWidth = 400
-            maxHeight= 1200
-            minHeight = 200
+            maxWidth = resources.getInteger(R.integer.crop_frame_vertical_orientation_max_width)
+            minWidth = resources.getInteger(R.integer.crop_frame_vertical_orientation_min_width)
+            maxHeight= resources.getInteger(R.integer.crop_frame_vertical_orientation_max_height)
+            minHeight = resources.getInteger(R.integer.crop_frame_vertical_orientation_min_height)
         }
     }
     private fun setUpCorners(canvas: Canvas?){
-        canvas?.drawLine(0f, 0f, 0f, borderLength, borderPaint)
-        canvas?.drawLine(0f, 0f, borderLength, 0f, borderPaint)
+        canvas?.drawLine(0f, 0f, 0f, cornerLength, borderPaint)
+        canvas?.drawLine(0f, 0f, cornerLength, 0f, borderPaint)
 
-        canvas?.drawLine(width.toFloat(), 0f, width.toFloat(), borderLength, borderPaint)
-        canvas?.drawLine(width.toFloat(), 0f, width.toFloat()-borderLength, 0f, borderPaint)
+        canvas?.drawLine(width.toFloat(), 0f, width.toFloat(), cornerLength, borderPaint)
+        canvas?.drawLine(width.toFloat(), 0f, width.toFloat()-cornerLength, 0f, borderPaint)
 
-        canvas?.drawLine(width.toFloat(), height.toFloat(), width.toFloat(), height.toFloat() - borderLength, borderPaint)
-        canvas?.drawLine(width.toFloat(), height.toFloat(), width.toFloat()-borderLength, height.toFloat(), borderPaint)
+        canvas?.drawLine(width.toFloat(), height.toFloat(), width.toFloat(), height.toFloat() - cornerLength, borderPaint)
+        canvas?.drawLine(width.toFloat(), height.toFloat(), width.toFloat()-cornerLength, height.toFloat(), borderPaint)
 
-        canvas?.drawLine(0f, height.toFloat(), 0f, height.toFloat() - borderLength, borderPaint)
-        canvas?.drawLine(0f, height.toFloat(), borderLength, height.toFloat(), borderPaint)
+        canvas?.drawLine(0f, height.toFloat(), 0f, height.toFloat() - cornerLength, borderPaint)
+        canvas?.drawLine(0f, height.toFloat(), cornerLength, height.toFloat(), borderPaint)
     }
     var lastTouchX :Int = 0
     var lastTouchY :Int = 0
