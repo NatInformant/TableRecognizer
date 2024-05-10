@@ -14,13 +14,11 @@ import javax.inject.Inject
 class FileAndMessageRepository @Inject constructor(
     val dataSource: FileRemoteDataSource
 ){
-    private val _message = MutableLiveData<String>("")
-    val message: LiveData<String> = _message
+    val message: LiveData<String> = dataSource.message
     @MainThread
     suspend fun sendPhoto(photo: Bitmap) {
         withContext(Dispatchers.IO) {
             dataSource.sendPhoto(photo)
         }
-        _message.value = dataSource.loadMessage()
     }
 }
