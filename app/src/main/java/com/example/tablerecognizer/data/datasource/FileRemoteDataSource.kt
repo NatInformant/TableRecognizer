@@ -23,7 +23,6 @@ import com.example.tablerecognizer.data.models.OcrRequest
 import okhttp3.OkHttpClient
 import java.io.IOException
 import org.json.JSONObject
-import retrofit2.await
 import java.lang.Exception
 
 class FileRemoteDataSource {
@@ -42,8 +41,13 @@ class FileRemoteDataSource {
     suspend fun sendPhoto(photo: Bitmap) {
         val uniqueTime = generateDateTimeString()
 
-        val tempFile = bitmapToTempFile(photo, "image_${uniqueTime}", ".jpg", File(System.getProperty("java.io.tmpdir")))
-        val content = Base64.encodeToString (tempFile.readBytes(), Base64.DEFAULT)
+        val tempFile = bitmapToTempFile(
+            photo,
+            "image_${uniqueTime}",
+            ".jpg",
+            File(System.getProperty("java.io.tmpdir"))
+        )
+        val content = Base64.encodeToString(tempFile.readBytes(), Base64.DEFAULT)
 
         val request = OcrRequest(
             mimeType = "JPEG",
@@ -56,17 +60,25 @@ class FileRemoteDataSource {
         call.enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 val responseBody = response.body()
-                val resultPath = saveCsvToFile(responseBody?.string(),"recognized_image_${uniqueTime}.json")
+                val resultPath =
+                    saveCsvToFile(responseBody?.string(), "recognized_image_${uniqueTime}.json")
 
-                _message.value = resultPath ?: "На вашей фотографии нет ни одной таблицы"
+                _message.value = "Your files are saved at: $resultPath" ?: "There are no tables in your photo."
             }
 
             override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                _message.value = "К сожалению, распознавание не сработало, сделайте более чёткую фотографию или проверьте подключение"
+                _message.value =
+                    "Unfortunately, the recognition did not work, take a clearer photo or check the connection."
             }
         })
     }
-    private fun bitmapToTempFile(bitmap: Bitmap, prefix: String, suffix: String, directory: File): File {
+
+    private fun bitmapToTempFile(
+        bitmap: Bitmap,
+        prefix: String,
+        suffix: String,
+        directory: File
+    ): File {
         val imageFile = File.createTempFile(prefix, suffix, directory)
 
         imageFile.outputStream().use { outputStream ->
@@ -76,80 +88,93 @@ class FileRemoteDataSource {
 
         return imageFile
     }
+
     private fun getDownloadDirectoryPath(): String {
-        val downloadsDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        val downloadsDirectory =
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
         return downloadsDirectory.absolutePath
     }
+
     private fun createFileInDownloadDirectory(fileName: String): File {
         val downloadDirectoryPath = getDownloadDirectoryPath()
         val file = File(downloadDirectoryPath, fileName)
         return file
     }
-    fun saveCsvToFile(csvContent: String?, fileName: String) :String? {
+
+    fun saveCsvToFile(csvContent: String?, fileName: String): String? {
         if (csvContent == null) {
             return null
         }
 
         val file = createFileInDownloadDirectory(fileName)
         return try {
-            toCSV(csvContent,file.absolutePath)
-        } catch (ex:Exception){
+            toCSV(csvContent, file.absolutePath)
+        } catch (ex: Exception) {
             null
         }
     }
 
     fun toCSV(content: String, jsonPath: String): String {
+        var jsonFile: File? = null
 
         try {
-            val file = File(jsonPath)
-            file.createNewFile()
-            FileOutputStream(file).use { outputStream ->
-                outputStream.write(content.toByteArray())
+            try {
+                jsonFile = File(jsonPath)
+                jsonFile.createNewFile()
+                FileOutputStream(jsonFile).use { outputStream ->
+                    outputStream.write(content.toByteArray())
+                }
+            } catch (e: IOException) {
+                e.printStackTrace()
             }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
 
-        val obj = JSONObject(content)
-        val result = obj.getJSONObject("result")
-        val textAnnotation = result.getJSONObject("textAnnotation")
-        val tables = textAnnotation.getJSONArray("tables")
+            val obj = JSONObject(content)
+            val result = obj.getJSONObject("result")
+            val textAnnotation = result.getJSONObject("textAnnotation")
+            val tables = textAnnotation.getJSONArray("tables")
 
-        val table1 = tables.getJSONObject(0)
-        val rowCount = table1.getInt("rowCount")
-        val columnCount = table1.getInt("columnCount")
-        val cells = table1.getJSONArray("cells")
+            val table1 = tables.getJSONObject(0)
+            val rowCount = table1.getInt("rowCount")
+            val columnCount = table1.getInt("columnCount")
+            val cells = table1.getJSONArray("cells")
 
-        val sb = StringBuilder()
-        for (i in 0 until rowCount) {
-            for (j in 0 until columnCount) {
-                val index = i * columnCount + j
-                val cell = cells.getJSONObject(index)
-                val text = cell.getString("text")
-                sb.append(text)
+            val sb = StringBuilder()
+            for (i in 0 until rowCount) {
+                for (j in 0 until columnCount) {
+                    val index = i * columnCount + j
+                    val cell = cells.getJSONObject(index)
+                    val text = cell.getString("text")
+                    sb.append(text)
 
-                if (j != columnCount - 1) {
-                    sb.append(",")
-                } else {
-                    sb.append("\n")
+                    if (j != columnCount - 1) {
+                        sb.append(",")
+                    } else {
+                        sb.append("\n")
+                    }
                 }
             }
-        }
 
-        val csvPath = jsonPath.replace(".json", ".csv")
+            val csvPath = jsonPath.replace(".json", ".csv")
 
-        try {
-            val file = File(csvPath)
-            file.createNewFile()
-            FileOutputStream(file).use { outputStream ->
-                outputStream.write(sb.toString().toByteArray())
+            try {
+                val file = File(csvPath)
+                file.createNewFile()
+                FileOutputStream(file).use { outputStream ->
+                    outputStream.write(sb.toString().toByteArray())
+                }
+            } catch (e: IOException) {
+                e.printStackTrace()
             }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
 
-        return csvPath
+            jsonFile!!.delete()
+
+            return csvPath
+        } catch (ex: Exception) {
+            jsonFile!!.delete()
+            throw Exception()
+        }
     }
+
     fun generateDateTimeString(): String {
         val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
         val date = Date()
