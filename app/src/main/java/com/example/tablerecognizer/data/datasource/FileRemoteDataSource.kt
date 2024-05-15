@@ -2,9 +2,6 @@ package com.example.tablerecognizer.data.datasource
 
 import android.graphics.Bitmap
 import android.os.Environment
-import okhttp3.MediaType
-import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
@@ -38,14 +35,14 @@ class FileRemoteDataSource {
 
     private val _message = MutableLiveData<String>("")
     val message: LiveData<String> = _message
-    suspend fun sendPhoto(photo: Bitmap) {
+    fun sendPhoto(photo: Bitmap) {
         val uniqueTime = generateDateTimeString()
 
         val tempFile = bitmapToTempFile(
             photo,
             "image_${uniqueTime}",
             ".jpg",
-            File(System.getProperty("java.io.tmpdir"))
+            File(System.getProperty("java.io.tmpdir")!!)
         )
         val content = Base64.encodeToString(tempFile.readBytes(), Base64.DEFAULT)
 
@@ -62,8 +59,11 @@ class FileRemoteDataSource {
                 val responseBody = response.body()
                 val resultPath =
                     saveCsvToFile(responseBody?.string(), "recognized_image_${uniqueTime}.json")
-
-                _message.value = "Your files are saved at: $resultPath" ?: "There are no tables in your photo."
+                if(resultPath==null){
+                    _message.value = "There are no tables in your photo."
+                }else{
+                    _message.value = "Your files are saved at: $resultPath"
+                }
             }
 
             override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
@@ -97,8 +97,7 @@ class FileRemoteDataSource {
 
     private fun createFileInDownloadDirectory(fileName: String): File {
         val downloadDirectoryPath = getDownloadDirectoryPath()
-        val file = File(downloadDirectoryPath, fileName)
-        return file
+        return File(downloadDirectoryPath, fileName)
     }
 
     fun saveCsvToFile(csvContent: String?, fileName: String): String? {
@@ -114,7 +113,7 @@ class FileRemoteDataSource {
         }
     }
 
-    fun toCSV(content: String, jsonPath: String): String {
+    private fun toCSV(content: String, jsonPath: String): String {
         var jsonFile: File? = null
 
         try {
@@ -175,7 +174,7 @@ class FileRemoteDataSource {
         }
     }
 
-    fun generateDateTimeString(): String {
+    private fun generateDateTimeString(): String {
         val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
         val date = Date()
         return dateFormat.format(date)

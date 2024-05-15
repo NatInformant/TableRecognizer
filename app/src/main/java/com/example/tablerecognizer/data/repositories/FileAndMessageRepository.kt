@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 @AppComponentScope
 class FileAndMessageRepository @Inject constructor(
-    val dataSource: FileRemoteDataSource
+    private val dataSource: FileRemoteDataSource
 ){
     val message: LiveData<String> = dataSource.message
     @MainThread

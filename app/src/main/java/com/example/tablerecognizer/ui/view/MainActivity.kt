@@ -39,11 +39,14 @@ class MainActivity : AppCompatActivity() {
     private var density: Float? = null
     private val applicationComponent
         get() = App.getInstance().applicationComponent
+    private var isSnackBarDismissed: Int? = 0
     private val viewModel: MainViewModel by viewModels { applicationComponent.getMainViewModelFactory() }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
+
+        isSnackBarDismissed = savedInstanceState?.getInt("isSnackBarDismissed")
 
         // Request camera permissions
         if (allPermissionsGranted()) {
@@ -86,7 +89,7 @@ class MainActivity : AppCompatActivity() {
         }
 
     private fun showMessage(newMessage: String) {
-        if (newMessage == "") {
+        if (newMessage == "" || isSnackBarDismissed == 1) {
             return
         }
 
@@ -95,6 +98,7 @@ class MainActivity : AppCompatActivity() {
 
         snackbar.setAction("OK") { // User clicked OK button
             snackbar.dismiss()
+            isSnackBarDismissed = 1
         }
 
         val view = snackbar.view
@@ -155,6 +159,7 @@ class MainActivity : AppCompatActivity() {
                         )
 
                         viewModel.sendPhoto(resultBitmap)
+                        isSnackBarDismissed=2
                     }
                 }
             )
@@ -211,6 +216,12 @@ class MainActivity : AppCompatActivity() {
             }
 
         }, ContextCompat.getMainExecutor(this))
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        outState.putInt("isSnackBarDismissed", isSnackBarDismissed?:0)
     }
 
     private fun requestPermissions() {
